@@ -235,6 +235,20 @@ ERROR
     FileUtils.rm File.join('bin', File.basename(path)), :force => true
   end
 
+  def install_libvbucket(dir)
+    FileUtils.mkdir_p dir
+    Dir.chdir(dir) do |dir|
+      run("curl #{VBUCKET_VENDOR_URL}.tgz -s -o - | tar xzf -")
+    end
+  end
+
+  def install_libcouchbase(dir)
+    FileUtils.mkdir_p dir
+    Dir.chdir(dir) do |dir|
+      run("curl #{COUCHBASE_VENDOR_URL}.tgz -s -o - | tar xzf -")
+    end
+  end
+
   # install libyaml into the LP to be referenced for psych compilation
   # @param [String] tmpdir to store the libyaml files
   def install_libyaml(dir)
@@ -267,6 +281,11 @@ ERROR
 
       version = run("env RUBYOPT=\"#{syck_hack}\" bundle version").strip
       topic("Installing dependencies using #{version}")
+
+      topic("Installing libvbucket")
+      install_libvbucket("#{tmpdir}/libvbucket")
+      topic("Installing libcouchbase")
+      install_couchbase("#{tmpdir}/libcouchbase")
 
       bundler_output = ""
       Dir.mktmpdir("libyaml-") do |tmpdir|
