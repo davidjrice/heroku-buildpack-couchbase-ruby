@@ -239,15 +239,17 @@ ERROR
   end
 
   def install_libvbucket(dir)
-    FileUtils.mkdir_p dir
-    Dir.chdir(dir) do |dir|
+    bin_dir = "bin"
+    FileUtils.mkdir_p bin_dir
+    Dir.chdir(dir) do |bin_dir|
       run("curl #{VBUCKET_VENDOR_URL}.tgz -s -o - | tar xzf -")
     end
   end
 
   def install_libcouchbase(dir)
-    FileUtils.mkdir_p dir
-    Dir.chdir(dir) do |dir|
+    bin_dir = "bin"
+    FileUtils.mkdir_p bin_dir
+    Dir.chdir(dir) do |bin_dir|
       run("curl #{COUCHBASE_VENDOR_URL}.tgz -s -o - | tar xzf -")
     end
   end
