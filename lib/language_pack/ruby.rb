@@ -291,7 +291,7 @@ ERROR
       end
       topic("Installing libcouchbase")
       Dir.mktmpdir("libcouchbase") do |tmpdir|
-        install_couchbase("#{tmpdir}/libcouchbase")
+        install_libcouchbase("#{tmpdir}/libcouchbase")
       end
 
       bundler_output = ""
