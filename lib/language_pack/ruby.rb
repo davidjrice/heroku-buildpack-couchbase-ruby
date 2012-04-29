@@ -12,6 +12,9 @@ class LanguagePack::Ruby < LanguagePack::Base
   NODE_VERSION        = "0.4.7"
   NODE_JS_BINARY_PATH = "node-#{NODE_VERSION}"
 
+  COUCHBASE_VENDOR_URL = "http://libcouchbase.s3.amazonaws.com/libcouchbase.gz"
+  VBUCKET_VENDOR_URL = "http://libcouchbase.s3.amazonaws.com/libvbucket.gz"
+
   # detects if this is a valid Ruby app
   # @return [Boolean] true if it's a Ruby app
   def self.use?
