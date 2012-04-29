@@ -283,9 +283,13 @@ ERROR
       topic("Installing dependencies using #{version}")
 
       topic("Installing libvbucket")
-      install_libvbucket("#{tmpdir}/libvbucket")
+      Dir.mktmpdir("libvbucket") do |tmpdir|
+        install_libvbucket("#{tmpdir}/libvbucket")
+      end
       topic("Installing libcouchbase")
-      install_couchbase("#{tmpdir}/libcouchbase")
+      Dir.mktmpdir("libcouchbase") do |tmpdir|
+        install_couchbase("#{tmpdir}/libcouchbase")
+      end
 
       bundler_output = ""
       Dir.mktmpdir("libyaml-") do |tmpdir|
