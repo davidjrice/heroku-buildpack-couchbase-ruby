@@ -303,6 +303,8 @@ ERROR
       version = run("env RUBYOPT=\"#{syck_hack}\" bundle version").strip
       topic("Installing dependencies using #{version}")
 
+      run("bundle config build.couchbase --with-libcouchbase-dir=/app/bin/couchbase")
+
       bundler_output = ""
       Dir.mktmpdir("libyaml-") do |tmpdir|
         libyaml_dir = "#{tmpdir}/#{LIBYAML_PATH}"
@@ -315,8 +317,6 @@ ERROR
         # we need to set BUNDLE_CONFIG and BUNDLE_GEMFILE for
         # codon since it uses bundler.
         env_vars       = "env BUNDLE_GEMFILE=#{pwd}/Gemfile BUNDLE_CONFIG=#{pwd}/.bundle/config CPATH=#{yaml_include}:$CPATH CPPATH=#{yaml_include}:$CPPATH LIBRARY_PATH=#{yaml_lib}:$LIBRARY_PATH RUBYOPT=\"#{syck_hack}\""
-
-        run("bundle config build.couchbase --with-libcouchbase-dir=/app/bin/couchbase")        
 
         puts "Running: #{bundle_command}"
         bundler_output << pipe("#{env_vars} #{bundle_command} --no-clean 2>&1")
