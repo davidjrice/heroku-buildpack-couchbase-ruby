@@ -53,8 +53,8 @@ class LanguagePack::Ruby < LanguagePack::Base
     allow_git do
       install_libvbucket
       install_libcouchbase
+      #install_couchbase_gem
       #run("gem install couchbase --with-libcouchbase-dir=bin/libcouchbase")
-      # install_couchbase_gem
 
       install_language_pack_gems
       build_bundler
@@ -316,7 +316,7 @@ ERROR
         # codon since it uses bundler.
         env_vars       = "env BUNDLE_GEMFILE=#{pwd}/Gemfile BUNDLE_CONFIG=#{pwd}/.bundle/config CPATH=#{yaml_include}:$CPATH CPPATH=#{yaml_include}:$CPPATH LIBRARY_PATH=#{yaml_lib}:$LIBRARY_PATH RUBYOPT=\"#{syck_hack}\""
 
-        run("#{env_vars} bundle config build.couchbase --with-libcouchbase-dir=/app/vendor/couchbase")
+        run("#{env_vars} bundle config build.couchbase --with-libcouchbase-dir=/app/bin/couchbase")
 
 
         puts "Running: #{bundle_command}"
