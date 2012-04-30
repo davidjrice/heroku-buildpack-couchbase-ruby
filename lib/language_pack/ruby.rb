@@ -246,7 +246,7 @@ ERROR
 
   def install_couchbase_gem
     topic("Installing couchbase")
-    run("gem install couchbase --pre -- --with-libcouchbase-dir=/app/bin/couchbase")
+    run("GEM_HOME=/app/vendor/bundle/ruby/1.9.1 gem install couchbase --pre  --no-ri --no-rdoc --env-shebang -- --with-libcouchbase-dir=/app/vendor/couchbase")
   end
 
   def install_libvbucket
