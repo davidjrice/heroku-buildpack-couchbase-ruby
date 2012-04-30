@@ -259,7 +259,7 @@ ERROR
     FileUtils.mkdir_p bin_dir
     Dir.chdir(bin_dir) do |dir|
       puts "-> #{dir}"
-      run("curl #{COUCHBASE_VENDOR_URL}.tgz -s -o - | tar xzf -")
+      run("curl #{COUCHBASE_VENDOR_URL} -s -o - | tar xzf -")
     end
   end
 
@@ -268,7 +268,7 @@ ERROR
   def install_libyaml(dir)
     FileUtils.mkdir_p dir
     Dir.chdir(dir) do |dir|
-      run("curl #{VENDOR_URL}/#{LIBYAML_PATH}.tgz -s -o - | tar xzf -")
+      run("curl #{VENDOR_URL}/#{LIBYAML_PATH} -s -o - | tar xzf -")
     end
   end
 
