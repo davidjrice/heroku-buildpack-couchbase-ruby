@@ -53,6 +53,7 @@ class LanguagePack::Ruby < LanguagePack::Base
     allow_git do
       install_libvbucket
       install_libcouchbase
+      install_couchbase_gem
       #run("gem install couchbase --with-libcouchbase-dir=bin/libcouchbase")
 
       install_language_pack_gems
@@ -242,21 +243,25 @@ ERROR
     FileUtils.rm File.join('bin', File.basename(path)), :force => true
   end
 
+  def install_couchbase_gem
+    topic("Installing couchbase")
+    run("gem install couchbase --pre -- --with-libcouchbase-dir=/app/bin/couchbase")
+  end
+
   def install_libvbucket
     topic("Installing libvbucket")
-    bin_dir = "bin/libvbucket"
+    bin_dir = "vendor/couchbase"
     FileUtils.mkdir_p bin_dir
     Dir.chdir(bin_dir) do |dir|
       puts "-> #{dir}"
       run("curl #{VBUCKET_VENDOR_URL} -s -o - | tar xzf -")
       #run("chmod +x #{path}")
     end
-
   end
 
   def install_libcouchbase
     topic("Installing libcouchbase")
-    bin_dir = "bin/libcouchbase"
+    bin_dir = "vendor/couchbase"
     FileUtils.mkdir_p bin_dir
     Dir.chdir(bin_dir) do |dir|
       puts "-> #{dir}"
