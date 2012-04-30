@@ -269,7 +269,7 @@ ERROR
   def install_libyaml(dir)
     FileUtils.mkdir_p dir
     Dir.chdir(dir) do |dir|
-      run("curl #{VENDOR_URL}/#{LIBYAML_PATH} -s -o - | tar xzf -")
+      run("curl #{VENDOR_URL}/#{LIBYAML_PATH}.tgz -s -o - | tar xzf -")
     end
   end
 
