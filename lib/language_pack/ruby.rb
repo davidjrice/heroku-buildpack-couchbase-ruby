@@ -207,7 +207,7 @@ ERROR
   def install_language_pack_gems
     FileUtils.mkdir_p(slug_vendor_base)
     Dir.chdir(slug_vendor_base) do |dir|
-      puts "slug_vendor_base: #{dir"
+      puts "slug_vendor_base: #{dir}"
       gems.each do |gem|
         run("curl #{VENDOR_URL}/#{gem}.tgz -s -o - | tar xzf -")
       end
