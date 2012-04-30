@@ -243,7 +243,7 @@ ERROR
 
   def install_libvbucket
     topic("Installing libvbucket")
-    bin_dir = "bin"
+    bin_dir = "#{bin_dir}/libvbucket"
     FileUtils.mkdir_p bin_dir
     Dir.chdir(bin_dir) do |dir|
       puts "-> #{dir}"
@@ -255,7 +255,7 @@ ERROR
 
   def install_libcouchbase
     topic("Installing libcouchbase")
-    bin_dir = "bin"
+    bin_dir = "#{bin_dir}/libcouchbase"
     FileUtils.mkdir_p bin_dir
     Dir.chdir(bin_dir) do |dir|
       puts "-> #{dir}"
