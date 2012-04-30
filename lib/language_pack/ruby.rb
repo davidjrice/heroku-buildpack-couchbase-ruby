@@ -53,7 +53,7 @@ class LanguagePack::Ruby < LanguagePack::Base
     allow_git do
       install_libvbucket
       install_libcouchbase
-      run("gem install couchbase --with-libcouchbase-dir=bin/libcouchbase")
+      #run("gem install couchbase --with-libcouchbase-dir=bin/libcouchbase")
 
       install_language_pack_gems
       build_bundler
@@ -248,7 +248,7 @@ ERROR
     FileUtils.mkdir_p bin_dir
     Dir.chdir(bin_dir) do |dir|
       puts "-> #{dir}"
-      run("curl #{VBUCKET_VENDOR_URL}.tgz -s -o - | tar xzf -")
+      run("curl #{VBUCKET_VENDOR_URL} -s -o - | tar xzf -")
       #run("chmod +x #{path}")
     end
 
