@@ -51,6 +51,9 @@ class LanguagePack::Ruby < LanguagePack::Base
     install_ruby
     setup_language_pack_environment
     allow_git do
+      install_libvbucket
+      install_libcouchbase
+
       install_language_pack_gems
       build_bundler
       create_database_yml
@@ -238,18 +241,24 @@ ERROR
     FileUtils.rm File.join('bin', File.basename(path)), :force => true
   end
 
-  def install_libvbucket(dir)
+  def install_libvbucket
+    topic("Installing libvbucket")
     bin_dir = "bin"
     FileUtils.mkdir_p bin_dir
     Dir.chdir(bin_dir) do |dir|
+      puts "-> #{dir}"
       run("curl #{VBUCKET_VENDOR_URL}.tgz -s -o - | tar xzf -")
+      #run("chmod +x #{path}")
     end
+
   end
 
-  def install_libcouchbase(dir)
+  def install_libcouchbase
+    topic("Installing libcouchbase")
     bin_dir = "bin"
     FileUtils.mkdir_p bin_dir
     Dir.chdir(bin_dir) do |dir|
+      puts "-> #{dir}"
       run("curl #{COUCHBASE_VENDOR_URL}.tgz -s -o - | tar xzf -")
     end
   end
@@ -286,15 +295,6 @@ ERROR
 
       version = run("env RUBYOPT=\"#{syck_hack}\" bundle version").strip
       topic("Installing dependencies using #{version}")
-
-      topic("Installing libvbucket")
-      Dir.mktmpdir("libvbucket") do |tmpdir|
-        install_libvbucket("#{tmpdir}/libvbucket")
-      end
-      topic("Installing libcouchbase")
-      Dir.mktmpdir("libcouchbase") do |tmpdir|
-        install_libcouchbase("#{tmpdir}/libcouchbase")
-      end
 
       bundler_output = ""
       Dir.mktmpdir("libyaml-") do |tmpdir|
