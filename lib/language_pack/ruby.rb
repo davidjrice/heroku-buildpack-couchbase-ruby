@@ -53,13 +53,13 @@ class LanguagePack::Ruby < LanguagePack::Base
     allow_git do
       install_libvbucket
       install_libcouchbase
-      install_couchbase_gem
       #run("gem install couchbase --with-libcouchbase-dir=bin/libcouchbase")
 
       install_language_pack_gems
       build_bundler
       create_database_yml
       install_binaries
+      install_couchbase_gem
       run_assets_precompile_rake_task
     end
   end
