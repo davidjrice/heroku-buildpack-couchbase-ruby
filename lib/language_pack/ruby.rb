@@ -208,7 +208,6 @@ ERROR
   def install_language_pack_gems
     FileUtils.mkdir_p(slug_vendor_base)
     Dir.chdir(slug_vendor_base) do |dir|
-      puts "slug_vendor_base: #{dir}"
       gems.each do |gem|
         run("curl #{VENDOR_URL}/#{gem}.tgz -s -o - | tar xzf -")
       end
@@ -255,7 +254,6 @@ ERROR
     bin_dir = "vendor/couchbase"
     FileUtils.mkdir_p bin_dir
     Dir.chdir(bin_dir) do |dir|
-      puts "-> #{dir}"
       run("curl #{VBUCKET_VENDOR_URL} -s -o - | tar xzf -")
       #run("chmod +x #{path}")
     end
@@ -266,7 +264,6 @@ ERROR
     bin_dir = "vendor/couchbase"
     FileUtils.mkdir_p bin_dir
     Dir.chdir(bin_dir) do |dir|
-      puts "-> #{dir}"
       run("curl #{COUCHBASE_VENDOR_URL} -s -o - | tar xzf -")
     end
   end
