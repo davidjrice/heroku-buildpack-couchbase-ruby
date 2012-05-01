@@ -251,7 +251,7 @@ ERROR
 
   def install_libvbucket
     topic("Installing libvbucket")
-    bin_dir = "vendor/couchbase"
+    bin_dir = "/app/vendor/couchbase"
     FileUtils.mkdir_p bin_dir
     Dir.chdir(bin_dir) do |dir|
       puts "-> #{dir}"
@@ -262,7 +262,7 @@ ERROR
 
   def install_libcouchbase
     topic("Installing libcouchbase")
-    bin_dir = "vendor/couchbase"
+    bin_dir = "/app/vendor/couchbase"
     FileUtils.mkdir_p bin_dir
     Dir.chdir(bin_dir) do |dir|
       puts "-> #{dir}"
@@ -320,7 +320,7 @@ ERROR
         # codon since it uses bundler.
         env_vars       = "env BUNDLE_GEMFILE=#{pwd}/Gemfile BUNDLE_CONFIG=#{pwd}/.bundle/config CPATH=#{yaml_include}:#{couchbase_inc}:$CPATH CPPATH=#{yaml_include}:#{couchbase_inc}:$CPPATH LIBRARY_PATH=#{yaml_lib}:#{couchbase_inc}:$LIBRARY_PATH RUBYOPT=\"#{syck_hack}\""
 
-        #run("#{env_vars} bundle config build.couchbase --with-libcouchbase-dir=#{pwd}/vendor/couchbase")
+        run("#{env_vars} bundle config build.couchbase --with-libcouchbase-dir=/app/vendor/couchbase")
 
 
         puts "Running: #{bundle_command}"
