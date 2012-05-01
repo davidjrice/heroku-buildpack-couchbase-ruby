@@ -1,3 +1,23 @@
+Heroku buildpack: Ruby Couchbase
+======================
+
+This is a buildpack that enables using the [couchbase gem](https://github.com/couchbase/couchbase-ruby-client) on Heroku Cedar.
+
+Note this only works with couchbase **1.2.0.dp** so you must have `gem 'couchbase', '1.2.0.dp'` in your **Gemfile**.
+
+    heroku create --stack cedar --buildpack http://github.com/davidjrice/heroku-buildpack-ruby-couchbase.git
+    git push heroku master
+    ...
+    -----> Heroku receiving push
+    -----> Fetching custom buildpack... done
+    -----> Ruby/Rails app detected
+    -----> Installing libvbucket
+    -----> Installing libcouchbase
+    -----> Installing dependencies using Bundler version 1.1.2
+           Running: bundle install --without development:test --path vendor/bundle --binstubs bin/ --deployment
+    ....
+
+
 Heroku buildpack: Ruby
 ======================
 
