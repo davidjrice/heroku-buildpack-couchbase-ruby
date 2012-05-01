@@ -308,13 +308,17 @@ ERROR
         libyaml_dir = "#{tmpdir}/#{LIBYAML_PATH}"
         install_libyaml(libyaml_dir)
 
+        couchbase_dir = 'vendor/couchbase'
+        couchbase_inc = File.expand_path("#{couchbase_dir}/include")
+        couchbase_lib = File.expand_path("#{couchbase_dir}/lib")
+
         # need to setup compile environment for the psych gem
         yaml_include   = File.expand_path("#{libyaml_dir}/include")
         yaml_lib       = File.expand_path("#{libyaml_dir}/lib")
         pwd            = run("pwd").chomp
         # we need to set BUNDLE_CONFIG and BUNDLE_GEMFILE for
         # codon since it uses bundler.
-        env_vars       = "env BUNDLE_GEMFILE=#{pwd}/Gemfile BUNDLE_CONFIG=#{pwd}/.bundle/config CPATH=#{yaml_include}:$CPATH CPPATH=#{yaml_include}:$CPPATH LIBRARY_PATH=#{yaml_lib}:$LIBRARY_PATH RUBYOPT=\"#{syck_hack}\""
+        env_vars       = "env BUNDLE_GEMFILE=#{pwd}/Gemfile BUNDLE_CONFIG=#{pwd}/.bundle/config CPATH=#{yaml_include}:#{couchbase_inc}:$CPATH CPPATH=#{yaml_include}:#{couchbase_inc}:$CPPATH LIBRARY_PATH=#{yaml_lib}:#{couchbase_inc}:$LIBRARY_PATH RUBYOPT=\"#{syck_hack}\""
 
         run("#{env_vars} bundle config build.couchbase --with-libcouchbase-dir=#{pwd}/vendor/couchbase")
 
