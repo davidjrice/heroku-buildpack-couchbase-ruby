@@ -308,7 +308,7 @@ ERROR
         libyaml_dir = "#{tmpdir}/#{LIBYAML_PATH}"
         install_libyaml(libyaml_dir)
 
-        couchbase_dir = 'vendor/couchbase'
+        couchbase_dir = '/app/vendor/couchbase'
         couchbase_inc = File.expand_path("#{couchbase_dir}/include")
         couchbase_lib = File.expand_path("#{couchbase_dir}/lib")
 
