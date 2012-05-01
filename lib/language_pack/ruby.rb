@@ -53,6 +53,7 @@ class LanguagePack::Ruby < LanguagePack::Base
     allow_git do
       install_libvbucket
       install_libcouchbase
+      run("cp -R vendor/couchbase /app/vendor/couchbase")
       #install_couchbase_gem
       #run("gem install couchbase --with-libcouchbase-dir=bin/libcouchbase")
 
@@ -251,7 +252,7 @@ ERROR
 
   def install_libvbucket
     topic("Installing libvbucket")
-    bin_dir = "/app/vendor/couchbase"
+    bin_dir = "vendor/couchbase"
     FileUtils.mkdir_p bin_dir
     Dir.chdir(bin_dir) do |dir|
       puts "-> #{dir}"
@@ -262,7 +263,7 @@ ERROR
 
   def install_libcouchbase
     topic("Installing libcouchbase")
-    bin_dir = "/app/vendor/couchbase"
+    bin_dir = "vendor/couchbase"
     FileUtils.mkdir_p bin_dir
     Dir.chdir(bin_dir) do |dir|
       puts "-> #{dir}"
