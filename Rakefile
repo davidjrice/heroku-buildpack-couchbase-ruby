@@ -3,7 +3,7 @@ require "tmpdir"
 
 S3_BUCKET_NAME  = "heroku-buildpack-ruby"
 VENDOR_URL      = "https://s3.amazonaws.com/#{S3_BUCKET_NAME}"
-COUCHBASE_VENDOR_URL = "http://libcouchbase.s3.amazonaws.com/libcouchbase.gz"
+COUCHBASE_VENDOR_URL = "http://libcouchbase.s3.amazonaws.com/libcouchbase-1.1.0.dp5.gz"
 VBUCKET_VENDOR_URL = "http://libcouchbase.s3.amazonaws.com/libvbucket.gz"
 
 def s3_tools_dir
