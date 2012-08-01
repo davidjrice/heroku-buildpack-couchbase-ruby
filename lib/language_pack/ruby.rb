@@ -14,8 +14,8 @@ class LanguagePack::Ruby < LanguagePack::Base
   JVM_BASE_URL        = "http://heroku-jvm-langpack-java.s3.amazonaws.com"
   JVM_VERSION         = "openjdk7-latest"
 
-  COUCHBASE_VENDOR_URL = "http://libcouchbase.s3.amazonaws.com/libcouchbase-1.1.0.dp5.gz"
-  VBUCKET_VENDOR_URL = "http://libcouchbase.s3.amazonaws.com/libvbucket.gz"
+  COUCHBASE_VENDOR_URL = "http://libcouchbase.s3.amazonaws.com/libcouchbase-1.1.0.dp9.gz"
+  VBUCKET_VENDOR_URL = "http://libcouchbase.s3.amazonaws.com/libvbucket-1.8.0.4.gz"
 
   # detects if this is a valid Ruby app
   # @return [Boolean] true if it's a Ruby app
