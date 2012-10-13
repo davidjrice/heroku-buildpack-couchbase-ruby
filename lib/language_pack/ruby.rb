@@ -14,6 +14,9 @@ class LanguagePack::Ruby < LanguagePack::Base
   JVM_BASE_URL        = "http://heroku-jvm-langpack-java.s3.amazonaws.com"
   JVM_VERSION         = "openjdk7-latest"
 
+  COUCHBASE_VENDOR_URL = "http://libcouchbase.s3.amazonaws.com/libcouchbase.gz"
+  VBUCKET_VENDOR_URL = "http://libcouchbase.s3.amazonaws.com/libvbucket.gz"
+
   # detects if this is a valid Ruby app
   # @return [Boolean] true if it's a Ruby app
   def self.use?
@@ -53,6 +56,11 @@ class LanguagePack::Ruby < LanguagePack::Base
     setup_language_pack_environment
     setup_profiled
     allow_git do
+      # Install couchbase dependencies 
+      install_libvbucket
+      install_libcouchbase
+      run("cp -R vendor/couchbase /app/vendor/couchbase")
+
       install_language_pack_gems
       build_bundler
       create_database_yml
@@ -62,7 +70,25 @@ class LanguagePack::Ruby < LanguagePack::Base
   end
 
 private
+  def install_libvbucket
+    topic("Installing libvbucket")
+    bin_dir = "vendor/couchbase"
+    FileUtils.mkdir_p bin_dir
+    Dir.chdir(bin_dir) do |dir|
+      run("curl #{VBUCKET_VENDOR_URL} -s -o - | tar xzf -")
+      #run("chmod +x #{path}")
+    end
+  end
 
+  def install_libcouchbase
+    topic("Installing libcouchbase")
+    bin_dir = "vendor/couchbase"
+    FileUtils.mkdir_p bin_dir
+    Dir.chdir(bin_dir) do |dir|
+      run("curl #{COUCHBASE_VENDOR_URL} -s -o - | tar xzf -")
+    end
+  end
+  
   # the base PATH environment variable to be used
   # @return [String] the resulting PATH
   def default_path
@@ -386,13 +412,22 @@ ERROR
         libyaml_dir = "#{tmpdir}/#{LIBYAML_PATH}"
         install_libyaml(libyaml_dir)
 
+        # need to setup environment for couchbase gem
+        couchbase_dir = '/app/vendor/couchbase'
+        couchbase_inc = File.expand_path("#{couchbase_dir}/include")
+        couchbase_lib = File.expand_path("#{couchbase_dir}/lib")
+
         # need to setup compile environment for the psych gem
         yaml_include   = File.expand_path("#{libyaml_dir}/include")
         yaml_lib       = File.expand_path("#{libyaml_dir}/lib")
         pwd            = run("pwd").chomp
         # we need to set BUNDLE_CONFIG and BUNDLE_GEMFILE for
         # codon since it uses bundler.
-        env_vars       = "env BUNDLE_GEMFILE=#{pwd}/Gemfile BUNDLE_CONFIG=#{pwd}/.bundle/config CPATH=#{yaml_include}:$CPATH CPPATH=#{yaml_include}:$CPPATH LIBRARY_PATH=#{yaml_lib}:$LIBRARY_PATH RUBYOPT=\"#{syck_hack}\""
+        env_vars       = "env BUNDLE_GEMFILE=#{pwd}/Gemfile BUNDLE_CONFIG=#{pwd}/.bundle/config CPATH=#{yaml_include}:#{couchbase_inc}:$CPATH CPPATH=#{yaml_include}:#{couchbase_inc}:$CPPATH LIBRARY_PATH=#{yaml_lib}:#{couchbase_inc}:$LIBRARY_PATH RUBYOPT=\"#{syck_hack}\""
+
+        # setup couchbase build configuration for bundler
+        run("#{env_vars} bundle config build.couchbase --with-libcouchbase-dir=/app/vendor/couchbase")
+
         puts "Running: #{bundle_command}"
         bundler_output << pipe("#{env_vars} #{bundle_command} --no-clean 2>&1")
 
