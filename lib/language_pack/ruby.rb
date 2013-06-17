@@ -7,15 +7,14 @@ require "language_pack/base"
 class LanguagePack::Ruby < LanguagePack::Base
   LIBYAML_VERSION     = "0.1.4"
   LIBYAML_PATH        = "libyaml-#{LIBYAML_VERSION}"
-  BUNDLER_VERSION     = "1.2.0.rc"
+  BUNDLER_VERSION     = "1.3.5"
   BUNDLER_GEM_PATH    = "bundler-#{BUNDLER_VERSION}"
   NODE_VERSION        = "0.4.7"
   NODE_JS_BINARY_PATH = "node-#{NODE_VERSION}"
   JVM_BASE_URL        = "http://heroku-jvm-langpack-java.s3.amazonaws.com"
   JVM_VERSION         = "openjdk7-latest"
 
-  COUCHBASE_VENDOR_URL = "http://libcouchbase.s3.amazonaws.com/libcouchbase.gz"
-  VBUCKET_VENDOR_URL = "http://libcouchbase.s3.amazonaws.com/libvbucket.gz"
+  COUCHBASE_VENDOR_URL = "http://packages.couchbase.com/clients/c/libcouchbase-2.0.6.tar.gz"
 
   # detects if this is a valid Ruby app
   # @return [Boolean] true if it's a Ruby app
@@ -56,11 +55,9 @@ class LanguagePack::Ruby < LanguagePack::Base
     setup_language_pack_environment
     setup_profiled
     allow_git do
-      install_libvbucket
+      # Install couchbase dependencies 
       install_libcouchbase
       run("cp -R vendor/couchbase /app/vendor/couchbase")
-      #install_couchbase_gem
-      #run("gem install couchbase --with-libcouchbase-dir=bin/libcouchbase")
 
       install_language_pack_gems
       build_bundler
@@ -71,6 +68,15 @@ class LanguagePack::Ruby < LanguagePack::Base
   end
 
 private
+
+  def install_libcouchbase
+    topic("Installing libcouchbase")
+    bin_dir = "vendor/couchbase"
+    FileUtils.mkdir_p bin_dir
+    Dir.chdir(bin_dir) do |dir|
+      run("curl #{COUCHBASE_VENDOR_URL} -s -o - | tar xzf -")
+    end
+  end
 
   # the base PATH environment variable to be used
   # @return [String] the resulting PATH
@@ -412,13 +418,14 @@ ERROR
       version = run("env RUBYOPT=\"#{syck_hack}\" bundle version").strip
       topic("Installing dependencies using #{version}")
 
-      cache_load "vendor/bundle"
+      load_bundler_cache
 
       bundler_output = ""
       Dir.mktmpdir("libyaml-") do |tmpdir|
         libyaml_dir = "#{tmpdir}/#{LIBYAML_PATH}"
         install_libyaml(libyaml_dir)
 
+        # need to setup environment for couchbase gem
         couchbase_dir = '/app/vendor/couchbase'
         couchbase_inc = File.expand_path("#{couchbase_dir}/include")
         couchbase_lib = File.expand_path("#{couchbase_dir}/lib")
@@ -431,8 +438,8 @@ ERROR
         # codon since it uses bundler.
         env_vars       = "env BUNDLE_GEMFILE=#{pwd}/Gemfile BUNDLE_CONFIG=#{pwd}/.bundle/config CPATH=#{yaml_include}:#{couchbase_inc}:$CPATH CPPATH=#{yaml_include}:#{couchbase_inc}:$CPPATH LIBRARY_PATH=#{yaml_lib}:#{couchbase_inc}:$LIBRARY_PATH RUBYOPT=\"#{syck_hack}\""
 
+        # setup couchbase build configuration for bundler
         run("#{env_vars} bundle config build.couchbase --with-libcouchbase-dir=/app/vendor/couchbase")
-
 
         puts "Running: #{bundle_command}"
         bundler_output << pipe("#{env_vars} #{bundle_command} --no-clean 2>&1")
@@ -442,7 +449,7 @@ ERROR
       if $?.success?
         log "bundle", :status => "success"
         puts "Cleaning up the bundler cache."
-        run "bundle clean"
+        pipe "bundle clean"
         cache_store ".bundle"
         cache_store "vendor/bundle"
 
@@ -613,5 +620,23 @@ params = CGI.parse(uri.query || "")
         puts "Asset precompilation completed (#{"%.2f" % time}s)"
       end
     end
+  end
+
+  def load_bundler_cache
+    full_ruby_version  = run(%q(ruby -v)).chomp
+    ruby_version_cache = "vendor/ruby_version"
+    cache_load ruby_version_cache
+    bundle_cache_loaded = cache_load "vendor/bundle"
+
+    if bundle_cache_loaded && !(File.exists?(ruby_version_cache) && full_ruby_version == File.read(ruby_version_cache).chomp)
+      puts "Ruby version change detected. Clearing bundler cache."
+      cache_clear "vendor/bundle"
+    end
+
+    FileUtils.mkdir_p("vendor")
+    File.open("vendor/ruby_version", 'w') do |file|
+      file.puts full_ruby_version
+    end
+    cache_store "vendor/ruby_version"
   end
 end
