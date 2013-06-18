@@ -2,22 +2,29 @@ require "language_pack"
 require "pathname"
 require "yaml"
 require "digest/sha1"
+require "language_pack/shell_helpers"
+require "language_pack/cache"
+require "language_pack/metadata"
 
 Encoding.default_external = Encoding::UTF_8 if defined?(Encoding)
 
 # abstract class that all the Ruby based Language Packs inherit from
 class LanguagePack::Base
+  include LanguagePack::ShellHelpers
+
   VENDOR_URL = "https://s3.amazonaws.com/heroku-buildpack-ruby"
 
-  attr_reader :build_path, :cache_path
+  attr_reader :build_path, :cache
 
   # changes directory to the build_path
   # @param [String] the path of the build dir
-  # @param [String] the path of the cache dir
+  # @param [String] the path of the cache dir this is nil during detect and release
   def initialize(build_path, cache_path=nil)
     @build_path = build_path
-    @cache_path = cache_path
-    @id = Digest::SHA1.hexdigest("#{Time.now.to_f}-#{rand(1000000)}")[0..10]
+    @cache      = LanguagePack::Cache.new(cache_path) if cache_path
+    @metadata   = LanguagePack::Metadata.new(@cache)
+    @id         = Digest::SHA1.hexdigest("#{Time.now.to_f}-#{rand(1000000)}")[0..10]
+    @warnings   = []
 
     Dir.chdir build_path
   end
@@ -53,6 +60,10 @@ class LanguagePack::Base
 
   # this is called to build the slug
   def compile
+    if @warnings.any?
+      topic "WARNINGS:"
+      puts @warnings.join("--\n")
+    end
   end
 
   # collection of values passed for a release
@@ -62,7 +73,6 @@ class LanguagePack::Base
 
     {
       "addons" => default_addons,
-      "config_vars" => default_config_vars,
       "default_process_types" => default_process_types
     }.to_yaml
   end
@@ -126,101 +136,5 @@ private ##################################
       end
     end.join(" ")
   end
-
-  # display error message and stop the build process
-  # @param [String] error message
-  def error(message)
-    Kernel.puts " !"
-    message.split("\n").each do |line|
-      Kernel.puts " !     #{line.strip}"
-    end
-    Kernel.puts " !"
-    log "exit", :error => message
-    exit 1
-  end
-
-  # run a shell comannd and pipe stderr to stdout
-  # @param [String] command to be run
-  # @return [String] output of stdout and stderr
-  def run(command)
-    %x{ #{command} 2>&1 }
-  end
-
-  # run a shell command and pipe stderr to /dev/null
-  # @param [String] command to be run
-  # @return [String] output of stdout
-  def run_stdout(command)
-    %x{ #{command} 2>/dev/null }
-  end
-
-  # run a shell command and stream the ouput
-  # @param [String] command to be run
-  def pipe(command)
-    output = ""
-    IO.popen(command) do |io|
-      until io.eof?
-        buffer = io.gets
-        output << buffer
-        puts buffer
-      end
-    end
-
-    output
-  end
-
-  # display a topic message
-  # (denoted by ----->)
-  # @param [String] topic message to be displayed
-  def topic(message)
-    Kernel.puts "-----> #{message}"
-    $stdout.flush
-  end
-
-  # display a message in line
-  # (indented by 6 spaces)
-  # @param [String] message to be displayed
-  def puts(message)
-    message.split("\n").each do |line|
-      super "       #{line.strip}"
-    end
-    $stdout.flush
-  end
-
-  # create a Pathname of the cache dir
-  # @return [Pathname] the cache dir
-  def cache_base
-    Pathname.new(cache_path)
-  end
-
-  # removes the the specified
-  # @param [String] relative path from the cache_base
-  def cache_clear(path)
-    target = (cache_base + path)
-    target.exist? && target.rmtree
-  end
-
-  # write cache contents
-  # @param [String] path of contents to store. it will be stored using this a relative path from the cache_base.
-  # @param [Boolean] defaults to true. if set to true, the cache store directory will be cleared before writing to it.
-  def cache_store(path, clear_first=true)
-    cache_clear(path) if clear_first
-    cache_copy path, (cache_base + path)
-  end
-
-  # load cache contents
-  # @param [String] relative path of the cache contents
-  def cache_load(path)
-    cache_copy (cache_base + path), path
-  end
-
-  # copy cache contents
-  # @param [String] source directory
-  # @param [String] destination directory
-  def cache_copy(from, to)
-    return false unless File.exist?(from)
-    FileUtils.mkdir_p File.dirname(to)
-    system("cp -a #{from} #{to}")
-  end
-
 end
 

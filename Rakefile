@@ -1,5 +1,6 @@
 require "fileutils"
 require "tmpdir"
+require 'hatchet/tasks'
 
 S3_BUCKET_NAME  = "heroku-buildpack-ruby"
 VENDOR_URL      = "https://s3.amazonaws.com/#{S3_BUCKET_NAME}"
@@ -56,18 +57,19 @@ def install_gem(gem, version)
 end
 
 def build_ruby_command(name, output, prefix, usr_dir, tmpdir, rubygems = nil)
+  vulcan_prefix = "/app/vendor/#{output}"
   build_command = [
     # need to move libyaml/libffi to dirs we can see
     "mv #{usr_dir} /tmp",
-    "./configure --disable-install-doc --prefix #{prefix}",
+    "./configure --enable-load-relative --disable-install-doc --prefix #{prefix}",
     "env CPATH=/tmp/#{usr_dir}/include:\\$CPATH CPPATH=/tmp/#{usr_dir}/include:\\$CPPATH LIBRARY_PATH=/tmp/#{usr_dir}/lib:\\$LIBRARY_PATH make",
     "make install"
   ]
-  build_command << "#{prefix}/bin/ruby /tmp/#{usr_dir}/rubygems-#{rubygems}/setup.rb"
-  build_command << "mv #{prefix} /app/vendor/#{name}" if name != output
+  build_command << "#{prefix}/bin/ruby /tmp/#{usr_dir}/rubygems-#{rubygems}/setup.rb" if rubygems
+  build_command << "mv #{prefix} /app/vendor/#{output}" if prefix != "/app/vendor/#{output}"
   build_command = build_command.join(" && ")
 
-  sh "vulcan build -v -o #{output}.tgz --source #{name} --command=\"#{build_command}\""
+  sh "vulcan build -v -o #{output}.tgz --prefix #{vulcan_prefix} --source #{name} --command=\"#{build_command}\""
   s3_upload(tmpdir, output)
 end
 
@@ -108,16 +110,17 @@ task "libyaml:install", :version do |t, args|
   Dir.mktmpdir("libyaml-") do |tmpdir|
     Dir.chdir(tmpdir) do |dir|
       FileUtils.rm_rf("#{tmpdir}/*")
+      prefix = "/app/vendor/yaml-#{version}"
 
       sh "curl http://pyyaml.org/download/libyaml/yaml-#{version}.tar.gz -s -o - | tar vzxf -"
 
       build_command = [
-        "env CFLAGS=-fPIC ./configure --enable-static --disable-shared --prefix=/app/vendor/yaml-#{version}",
+        "env CFLAGS=-fPIC ./configure --enable-static --disable-shared --prefix=#{prefix}",
         "make",
         "make install"
       ].join(" && ")
 
-      sh "vulcan build -v -o #{name}.tgz --source yaml-#{version} --command=\"#{build_command}\""
+      sh "vulcan build -v -o #{name}.tgz --source yaml-#{version} --prefix=#{prefix} --command=\"#{build_command}\""
       s3_upload(tmpdir, name)
     end
   end
@@ -144,7 +147,7 @@ task "node:install", :version do |t, args|
         "rm -rf #{prefix}/bin"
       ].join(" && ")
 
-      sh "vulcan build -v -o #{name}.tgz --source node-v#{version} --command=\"#{build_command}\""
+      sh "vulcan build -v -o #{name}.tgz --source node-v#{version} --command=\"#{build_command}\" --prefix=\"#{prefix}\""
       s3_upload(tmpdir, name)
     end
   end
@@ -177,9 +180,11 @@ task "ruby:install", :version do |t, args|
       build_ruby_command(full_name, name, prefix, usr_dir, tmpdir, rubygems)
 
       # build ruby
-      output  = "ruby-build-#{version}"
-      prefix  = "/tmp/#{name}"
-      build_ruby_command(full_name, output, prefix, usr_dir, tmpdir, rubygems)
+      if major_ruby == "1.8"
+        output  = "ruby-build-#{version}"
+        prefix  = "/tmp/ruby-#{version}"
+        build_ruby_command(full_name, output, prefix, usr_dir, tmpdir, rubygems)
+      end
     end
   end
 end
@@ -337,8 +342,20 @@ task "libffi:install", :version do |t, args|
         "rm -rf #{prefix}/lib/#{name}"
       ].join(" && ")
 
-      sh "vulcan build -v -o #{name}.tgz --source #{name} --command=\"#{build_command}\""
+      sh "vulcan build -v -o #{name}.tgz --source #{name} --prefix=#{prefix} --command=\"#{build_command}\""
       s3_upload(tmpdir, name)
     end
   end
+end
+
+begin
+  require 'rspec/core/rake_task'
+
+  desc "Run specs"
+  RSpec::Core::RakeTask.new(:spec) do |t|
+    t.rspec_opts = %w(-fs --color)
+    #t.ruby_opts  = %w(-w)
+  end
+  task :default => :spec
+rescue LoadError => e
 end
