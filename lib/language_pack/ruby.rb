@@ -20,7 +20,7 @@ class LanguagePack::Ruby < LanguagePack::Base
   JVM_VERSION          = "openjdk7-latest"
   DEFAULT_RUBY_VERSION = "ruby-2.0.0"
 
-  COUCHBASE_VENDOR_URL = "http://packages.couchbase.com/clients/c/libcouchbase-2.0.6.tar.gz"
+  COUCHBASE_VENDOR_URL = "http://asquera-share.s3.amazonaws.com/heroku/libcouchbase-2.0.tgz"
 
   # detects if this is a valid Ruby app
   # @return [Boolean] true if it's a Ruby app
