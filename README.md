@@ -33,7 +33,7 @@ Example Usage:
     $ ls
     Gemfile Gemfile.lock
 
-    $ heroku create --stack cedar --buildpack http://github.com/heroku/heroku-buildpack-ruby.git
+    $ heroku create --stack cedar --buildpack https://github.com/heroku/heroku-buildpack-ruby.git
 
     $ git push heroku master
     ...
@@ -53,6 +53,32 @@ Example Usage:
 
 The buildpack will detect your app as Ruby if it has a `Gemfile` and `Gemfile.lock` files in the root directory. It will then proceed to run `bundle install` after setting up the appropriate environment for [ruby](http://ruby-lang.org) and [Bundler](http://gembundler.com).
 
+#### Run the Tests
+
+The tests on this buildpack are written in Rspec to allow the use of
+`focused: true`. Parallelization of testing is provided by
+https://github.com/grosser/parallel_tests this lib spins up an arbitrary
+number of processes and running a different test file in each process,
+it does not parallelize tests within a test file. To run the tests: clone the repo, then `bundle install` then clone the test fixtures by running:
+
+```sh
+$ hatchet install
+```
+
+Now run the tests:
+
+```sh
+$ bundle exec parallel_rspec -n 6 spec/
+```
+
+If you don't want to run them in parallel you can still:
+
+```sh
+$ bundle exec rake spec
+```
+
+Now go take a nap or something for a really long time.
+
 #### Bundler
 
 For non-windows `Gemfile.lock` files, the `--deployment` flag will be used. In the case of windows, the Gemfile.lock will be deleted and Bundler will do a full resolve so native gems are handled properly. The `vendor/bundle` directory is cached between builds to allow for faster `bundle install` times. `bundle clean` is used to ensure no stale gems are stored between builds.
@@ -67,7 +93,7 @@ Example Usage:
     $ ls config/environment.rb
     config/environment.rb
 
-    $ heroku create --stack cedar --buildpack http://github.com/heroku/heroku-buildpack-ruby.git
+    $ heroku create --stack cedar --buildpack https://github.com/heroku/heroku-buildpack-ruby.git
 
     $ git push heroku master
     ...
@@ -101,7 +127,7 @@ Example Usage:
     $ ls config/application.rb
     config/application.rb
 
-    $ heroku create --stack cedar --buildpack http://github.com/heroku/heroku-buildpack-ruby.git
+    $ heroku create --stack cedar --buildpack https://github.com/heroku/heroku-buildpack-ruby.git
 
     $ git push heroku master
     -----> Heroku receiving push
@@ -130,7 +156,7 @@ Hacking
 
 To use this buildpack, fork it on Github.  Push up changes to your fork, then create a test app with `--buildpack <your-github-url>` and push to it.
 
-To change the vendored binaries for Bundler, [Node.js](http://github.com/joyent/node), and rails plugins, use the rake tasks provided by the `Rakefile`. You'll need an S3-enabled AWS account and a bucket to store your binaries in as well as the [vulcan](http://github.com/ddollar/vulcan) gem to build the binaries on heroku.
+To change the vendored binaries for Bundler, [Node.js](http://github.com/joyent/node), and rails plugins, use the rake tasks provided by the `Rakefile`. You'll need an S3-enabled AWS account and a bucket to store your binaries in as well as the [vulcan](http://github.com/heroku/vulcan) gem to build the binaries on heroku.
 
 For example, you can change the vendored version of Bundler to 1.1.rc.
 
